@@ -2,25 +2,25 @@ package org.example;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
-import org.antlr.v4.runtime.CharStreams;
 import org.example.LuaLexer;
 import org.example.LuaGrammar;
 
 public class Main {
     public static void main(String[] args) {
         try {
-            LuaLexer lexer;
+            CharStream input;
             if (args.length > 0) {
-                lexer = new LuaLexer(CharStreams.fromFileName(args[0]));
+                input = CharStreams.fromFileName(args[0]);
             } else {
-                lexer = new LuaLexer(CharStreams.fromStream(System.in));
+                input = CharStreams.fromStream(System.in);
             }
-            CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-            LuaGrammar parser = new LuaGrammar(tokenStream);
+            LuaLexer lexer = new LuaLexer(input);
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            LuaGrammar parser = new LuaGrammar(tokens);
             ParseTree tree = parser.chunk();
             System.out.println(tree.toStringTree(parser));
-        }catch (Exception e){
-            System.out.println(e.getCause().getMessage());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 }

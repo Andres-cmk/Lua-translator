@@ -1,9 +1,5 @@
 parser grammar LuaGrammar;
 
-@header {
-    package org.example;
-}
-
 options {
     tokenVocab = LuaLexer;
 }
@@ -25,7 +21,7 @@ stat : SEMI
         | FOR namelist IN explist DO block END
         | FUNCTION funcname funcbody
         | LOCAL FUNCTION NAME funcbody
-        | LOCAL namelist (EQ explist)? ;
+        | LOCAL attnamelist (EQ explist)? ;
 
 
 attnamelist : NAME attrib (COMMA NAME attrib)* ;
@@ -69,7 +65,8 @@ tableconstructor : OCU (fieldlist)? CCU ;
 fieldlist : field (fieldsep field)* (fieldsep)? ;
 field : OB exp CB EQ exp | NAME EQ exp | exp ;
 fieldsep : COMMA | SEMI ;
-binop : PLUS | MINUS | STAR | SLASH | CARET | PER | DD |
+binop : PLUS | MINUS | STAR | SLASH | SS | CARET | PER | DD |
+        LL | GG | AMP | PIPE | SQUIG |
         LT | LE | GT | GE | EE | SQEQ |
         AND | OR ;
 unop : MINUS | NOT | POUND | SQUIG ;

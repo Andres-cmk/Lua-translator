@@ -1,9 +1,5 @@
 lexer grammar LuaLexer;
 
-@header {
-    package org.example;
-}
-
 options {
     superClass=org.antlr.v4.runtime.Lexer;
 }
@@ -69,9 +65,11 @@ SQEQ     : '~=';
 
 // lexical rules
 NAME : [a-zA-Z_][a-zA-Z0-9_]* ;
-NUMBER : [0-9]+ ('.' [0-9]+)? | '0' [x] [0-9a-fA-F]+ ;
-STRING : '"' (ESC | ~["\\])* '"' | '\'' (ESC | ~['\\])* '\'' ;
-fragment ESC : '\\' [btnfr"'\\] ;
-COMMENT : '--' ~[\r\n]* ;
+NUMBER : '0' [xX] HEXDIGIT+ ('.' HEXDIGIT*)? ([pP] [+-]? [0-9]+)? | [0-9]+ ('.' [0-9]+)? ([eE] [+-]? [0-9]+)? ;
+STRING : '"' (ESC | ~["\\])* '"' | '\'' (ESC | ~['\\])* '\'' | LONGSTRING ;
+fragment LONGSTRING : '[' '='* '[' .*? ']' '='* ']' ;
+fragment ESC : '\\' (['"abtnfrv\\z] | 'x' HEXDIGIT HEXDIGIT | [0-9] [0-9]? [0-9]? | 'u{' HEXDIGIT+ '}') ;
+fragment HEXDIGIT : [0-9a-fA-F] ;
+COMMENT : '--' ~[\r\n]* -> skip ;
 WS : [ \t\r\n]+ -> skip ;
 
