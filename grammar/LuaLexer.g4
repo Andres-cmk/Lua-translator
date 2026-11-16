@@ -1,9 +1,5 @@
 lexer grammar LuaLexer;
 
-options {
-    superClass=org.antlr.v4.runtime.Lexer;
-}
-
 SEMI : ';';
 EQ   : '=';
 
@@ -65,11 +61,19 @@ SQEQ     : '~=';
 
 // lexical rules
 NAME : [a-zA-Z_][a-zA-Z0-9_]* ;
-NUMBER : '0' [xX] HEXDIGIT+ ('.' HEXDIGIT*)? ([pP] [+-]? [0-9]+)? | [0-9]+ ('.' [0-9]+)? ([eE] [+-]? [0-9]+)? ;
-STRING : '"' (ESC | ~["\\])* '"' | '\'' (ESC | ~['\\])* '\'' | LONGSTRING ;
-fragment LONGSTRING : '[' '='* '[' .*? ']' '='* ']' ;
-fragment ESC : '\\' (['"abtnfrv\\z] | 'x' HEXDIGIT HEXDIGIT | [0-9] [0-9]? [0-9]? | 'u{' HEXDIGIT+ '}') ;
+NUMBER : '0' [xX] HEXDIGIT* ('.' HEXDIGIT*)? ([pP] [+-]? DIGIT+)?
+       | DIGIT+ ('.' DIGIT*)? EXPONENT?
+       | '.' DIGIT+ EXPONENT?
+       ;
+STRING : '"' (ESC | ~["\\\r\n])* '"' | '\'' (ESC | ~['\\\r\n])* '\'' | LONGSTRING ;
+fragment LONGSTRING : '[' NESTED_STR ']' ;
+fragment NESTED_STR : '=' NESTED_STR '=' | '[' .*? ']' ;
+fragment ESC : '\\' ( ['"\\abfnrtv\r\n] | 'z' [ \t\r\n\f]* | 'x' HEXDIGIT HEXDIGIT | DIGIT DIGIT? DIGIT? | 'u{' HEXDIGIT+ '}' ) ;
+fragment EXPONENT : [eE] [+-]? DIGIT+ ;
+fragment DIGIT : [0-9] ;
 fragment HEXDIGIT : [0-9a-fA-F] ;
-COMMENT : '--' ~[\r\n]* -> skip ;
-WS : [ \t\r\n]+ -> skip ;
-
+LONGCOMMENT : '--[' NESTED_STR ']' -> skip ;
+// Comentario de linea que NO empieza con un corchete largo (si no, ganaria por ser mas largo).
+COMMENT : '--' ( '[' '='* ~[=[\r\n] ~[\r\n]* | '[' '='* | ~[[\r\n] ~[\r\n]* )? -> skip ;
+SHEBANG : '#!' ~[\r\n]* -> skip ;
+WS : [ \t\r\n\f]+ -> skip ;

@@ -1,0 +1,18 @@
+function	nil	table	string	number	boolean	thread
+45.68%	true	number	true
+a+b
+5	nil	[string "syntax error here"]:1: syntax error near 'error'
+42
+Lua 5.4	true
+true
+true
+Hä€	5
+nil	inf	true
+0.1	0.1	1e-05	123456789012	2147483648.0	-9.2233720368548e+18	-9223372036854775808	4.0
+1	50	100
+k=true	true
+true |  nil|ab
+500000500000
+1.0	2.5	0.5	-4	3	3.0
+1e+15	1e+16	123456789012345678
+15	255	-9223372036854775808	21.0

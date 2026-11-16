@@ -1,0 +1,15 @@
+1 2 3 
+10 7 4 1 
+1 1.5 2 
+1 2 3 
+6
+4
+1,3,5,7,
+mediano
+si
+nil	nil	2	def	true	false
+5
+nil
+k1 k2 k3 
+ab
+3

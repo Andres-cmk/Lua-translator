@@ -1,0 +1,18 @@
+suspended
+inicio	1	2
+true	3
+suspended
+recibi	10
+true	20
+recibi	x	y
+true	fin	99
+dead
+false	cannot resume dead coroutine
+1	2	3
+1:1 2:4 3:9 4:16 
+false	stdin:20: error en corrutina
+false	thread: 0x26a19058	true
+a b c 
+dead
+in1	in2	out
+false	attempt to yield from outside a coroutine

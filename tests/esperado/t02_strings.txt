@@ -1,0 +1,20 @@
+HOLA MUNDO DESDE LUA	hola mundo desde lua	20	Hola	Lua	Mundo desd	Hola Mundo desde Lua|Hola Mundo desde Lua
+6	10	nil	3	nil
+Hola	nil	key	value
+Hola;Mundo;desde;Lua;
+H0la Mund0 desde Lua	HOLA MUNDO desde Lua	<hello> <world>	2
+cba	97	Hi	3 items
+   42|42   |00042|ff|FF|10|1.234568e+04|3.142|      2.50|0.0001|1e+20|100
+hi "a \"quoted\"\
+ line"     a| A %
+izq       |       der|	+5 +3.14
+trim me!
+a;b;;c			abc
+a:1 b:2 c:3
+3	hel	test	(a(b)c)
+5	hello	x	10
+6	ñANDú	tab	here	nl\n	single 'q'	ABCH
+long
+string	with ]] inside
+ Camel Case String	%d,%d,%d
+2	abc12.0
