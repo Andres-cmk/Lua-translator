@@ -247,7 +247,7 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
         if (src instanceof String) return (String) src;
         if (!(src instanceof ParserRuleContext)) return "";
         ParserRuleContext c = (ParserRuleContext) src;
-        if (c instanceof LuaGrammar.PrefixExpContext) c = ((LuaGrammar.PrefixExpContext) c).prefixexp();
+        if (c instanceof LuaGrammar.PrefixExprContext) c = ((LuaGrammar.PrefixExprContext) c).prefixexp();
         if (c instanceof LuaGrammar.NamePrefixContext) {
             return " (" + nameKind(text(((LuaGrammar.NamePrefixContext) c).NAME())) + ")";
         }
@@ -377,16 +377,16 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
     /** Devuelve true si la expresion puede producir varios valores (llamada o '...'). */
     static boolean isMulti(LuaGrammar.ExpContext e) {
         if (e instanceof LuaGrammar.VarargExpContext) return true;
-        if (e instanceof LuaGrammar.PrefixExpContext) {
-            LuaGrammar.PrefixexpContext p = ((LuaGrammar.PrefixExpContext) e).prefixexp();
+        if (e instanceof LuaGrammar.PrefixExprContext) {
+            LuaGrammar.PrefixexpContext p = ((LuaGrammar.PrefixExprContext) e).prefixexp();
             return p instanceof LuaGrammar.CallPrefixContext || p instanceof LuaGrammar.MethodPrefixContext;
         }
         return false;
     }
 
     Object[] evalMulti(LuaGrammar.ExpContext e) {
-        if (e instanceof LuaGrammar.PrefixExpContext) {
-            LuaGrammar.PrefixexpContext p = ((LuaGrammar.PrefixExpContext) e).prefixexp();
+        if (e instanceof LuaGrammar.PrefixExprContext) {
+            LuaGrammar.PrefixexpContext p = ((LuaGrammar.PrefixExprContext) e).prefixexp();
             if (p instanceof LuaGrammar.CallPrefixContext) {
                 LuaGrammar.CallPrefixContext c = (LuaGrammar.CallPrefixContext) p;
                 return evalCall(c.prefixexp(), c.args());
@@ -497,9 +497,9 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
     private Object evalReturn(LuaGrammar.RetstatContext rs) {
         LuaGrammar.ExplistContext el = rs.explist();
         if (el == null) return Lua.NONE;
-        if (el.children.size() == 1 && el.children.get(0) instanceof LuaGrammar.PrefixExpContext) {
+        if (el.children.size() == 1 && el.children.get(0) instanceof LuaGrammar.PrefixExprContext) {
             // llamada en posicion de cola: return f(x)
-            LuaGrammar.PrefixexpContext p = ((LuaGrammar.PrefixExpContext) el.children.get(0)).prefixexp();
+            LuaGrammar.PrefixexpContext p = ((LuaGrammar.PrefixExprContext) el.children.get(0)).prefixexp();
             if (p instanceof LuaGrammar.CallPrefixContext) {
                 LuaGrammar.CallPrefixContext c = (LuaGrammar.CallPrefixContext) p;
                 Object fn = c.prefixexp().accept(this);
@@ -907,7 +907,7 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
     }
 
     @Override
-    public Object visitPrefixExp(LuaGrammar.PrefixExpContext ctx) {
+    public Object visitPrefixExpr(LuaGrammar.PrefixExprContext ctx) {
         return ctx.children.get(0).accept(this);
     }
 

@@ -53,7 +53,7 @@ exp locals [Object cache = null]   // cache de constantes (numeros y strings lit
     | STRING                                            # stringExp
     | DDD                                               # varargExp
     | functiondef                                       # functionDefExp
-    | prefixexp                                         # prefixExp
+    | prefixexp                                         # prefixExpr
     | tableconstructor                                  # tableExp
     | <assoc=right> exp CARET exp                       # powExp
     | (NOT | POUND | MINUS | SQUIG) exp                 # unaryExp
