@@ -22,6 +22,21 @@ public final class Coroutine {
     private Interpreter.Scope savedScope;
     private Interpreter.CallState callState = new Interpreter.CallState();
     private Coroutine previous;
+    // estado de quien hizo resume mientras esta corrutina corre (para el recolector)
+    Interpreter.Scope resumerScope;
+    Interpreter.CallState resumerState;
+
+    Interpreter.Scope savedScope() {
+        return savedScope;
+    }
+
+    Interpreter.CallState callState() {
+        return callState;
+    }
+
+    Coroutine previous() {
+        return previous;
+    }
 
     Coroutine(Interpreter interp, Object fn) {
         this.interp = interp;
@@ -39,6 +54,8 @@ public final class Coroutine {
         previous = prev;
         Interpreter.Scope resumerScope = interp.scope;
         Interpreter.CallState resumerState = interp.state;
+        this.resumerScope = resumerScope;
+        this.resumerState = resumerState;
 
         status = "running";
         interp.currentCoroutine = this;

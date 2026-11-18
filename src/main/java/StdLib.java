@@ -229,6 +229,7 @@ final class StdLib {
                 throw new LuaError("cannot change a protected metatable", true);
             }
             t.metatable = (LuaTable) mt;
+            if (mt != null && ((LuaTable) mt).get("__mode") instanceof String) GarbageCollector.register(t);
             return ret(t);
         });
         reg(G, "getmetatable", a -> {
@@ -317,6 +318,7 @@ final class StdLib {
                 return new Object[] {kb, 0L};
             }
             if ("isrunning".equals(opt)) return ret(Boolean.TRUE);
+            if ("collect".equals(opt) || "step".equals(opt)) GarbageCollector.collect(I);
             return ret(0L);
         });
     }
@@ -1261,10 +1263,9 @@ final class StdLib {
         LuaTable fileMeta = new LuaTable();
         fileMeta.put("__index", fileMethods);
         fileMeta.put("__name", "FILE*");
-        LuaTable stdout = new LuaTable();
-        stdout.metatable = fileMeta;
-        LuaTable stderr = new LuaTable();
-        stderr.metatable = fileMeta;
+        LuaUserdata stdout = new LuaUserdata(fileMeta);
+        LuaUserdata stderr = new LuaUserdata(fileMeta);
+        fileMeta.put("__tostring", LuaFunction.of("tostring", a -> ret("file (" + Lua.address(a[0]) + ")")));
         reg(fileMethods, "write", a -> {
             PrintStream ps = arg(a, 0) == stderr ? System.err : out;
             if (ps == System.err) out.flush();
@@ -1281,7 +1282,7 @@ final class StdLib {
         reg(fileMethods, "lines", a -> ret(LuaFunction.of("lines_iter", x -> NIL)));
         IO.put("stdout", stdout);
         IO.put("stderr", stderr);
-        IO.put("stdin", new LuaTable());
+        IO.put("stdin", new LuaUserdata(fileMeta));
         reg(IO, "write", a -> {
             for (int i = 0; i < a.length; i++) out.print(writeArg(a, i));
             return ret(stdout);

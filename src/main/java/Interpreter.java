@@ -42,6 +42,14 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
         private String[] names;
         private Ref[] refs;
         private int n;
+        java.util.ArrayList<Object> toClose; // valores de variables <close>, en orden de declaracion
+
+        /** Valores actuales de las variables de este ambito (para el recolector de basura). */
+        void collectValues(java.util.List<Object> out) {
+            for (int i = 0; i < n; i++) out.add(refs[i].v);
+            if (varargs != null) out.addAll(Arrays.asList(varargs));
+            if (toClose != null) out.addAll(toClose);
+        }
 
         Scope(Scope parent, boolean fnBoundary) {
             this.parent = parent;
@@ -79,6 +87,7 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
     /** Pila de lineas de llamada (para error(msg, nivel) y mensajes de error). */
     static final class CallState {
         int[] lines = new int[256]; // linea del llamador de cada funcion Lua activa
+        Scope[] scopes = new Scope[256]; // ambito del llamador de cada funcion Lua activa
         int depth = 0;
         int line = 0;               // linea que se esta ejecutando en la funcion actual
     }
@@ -144,13 +153,17 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
         Object invoke(Object[] args) {
             CallState st = state;
             if (st.depth >= MAX_DEPTH) throw new LuaError("stack overflow", true);
-            if (st.depth == st.lines.length) st.lines = Arrays.copyOf(st.lines, st.depth * 2);
+            if (st.depth == st.lines.length) {
+                st.lines = Arrays.copyOf(st.lines, st.depth * 2);
+                st.scopes = Arrays.copyOf(st.scopes, st.depth * 2);
+            }
             int callerLine = st.line;
+            st.scopes[st.depth] = scope;
             st.lines[st.depth++] = callerLine;
             try {
                 return invokeBody(args);
             } finally {
-                st.depth--;
+                st.scopes[--st.depth] = null;
                 st.line = callerLine;
             }
         }
@@ -279,6 +292,7 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
     Object getVar(String name) {
         Ref r = lookup(name);
         if (r != null) return r.v;
+        if ("_ENV".equals(name)) return globals;
         if (globals.metatable == null) return globals.get(name);
         return Lua.index(globals, name);
     }
@@ -409,7 +423,32 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
 
     // ------------------------------------------------------------------ bloques y sentencias
 
+    /** Ejecuta un bloque y, al salir (normal o por error), cierra sus variables {@code <close>}. */
     Object execBlock(LuaGrammar.BlockContext b) {
+        Scope sc = scope;
+        Object sig;
+        try {
+            sig = execStatements(b);
+        } catch (LuaError e) {
+            if (sc != null && sc.toClose != null) closeVariables(sc, e.value);
+            throw e;
+        }
+        if (sc != null && sc.toClose != null) closeVariables(sc, null);
+        return sig;
+    }
+
+    /** Llama __close(valor, error) en orden inverso al de declaracion. */
+    private void closeVariables(Scope sc, Object err) {
+        java.util.ArrayList<Object> list = sc.toClose;
+        sc.toClose = null;
+        for (int i = list.size() - 1; i >= 0; i--) {
+            Object v = list.get(i);
+            Object h = Lua.metaOf(v, "__close");
+            if (h != null) Lua.call(h, v, err);
+        }
+    }
+
+    private Object execStatements(LuaGrammar.BlockContext b) {
         List<ParseTree> kids = b.children;
         if (kids == null) return null;
         int n = kids.size();
@@ -571,21 +610,29 @@ public final class Interpreter extends LuaGrammarBaseVisitor<Object> {
 
     @Override
     public Object visitLocalStat(LuaGrammar.LocalStatContext ctx) {
-        List<TerminalNode> names = ctx.attnamelist().NAME();
-        if (ctx.explist() == null) {
-            for (TerminalNode n : names) scope.declare(text(n), null);
-            return null;
-        }
-        if (names.size() == 1 && ctx.explist().exp().size() == 1) {
-            Object v = visit(ctx.explist().exp(0));
-            scope.declare(text(names.get(0)), v);
-            return null;
-        }
-        Object[] vals = evalExpList(ctx.explist());
+        LuaGrammar.AttnamelistContext al = ctx.attnamelist();
+        List<TerminalNode> names = al.NAME();
+        Object[] vals = ctx.explist() == null ? Lua.NONE : evalExpList(ctx.explist());
         for (int i = 0; i < names.size(); i++) {
-            scope.declare(text(names.get(i)), i < vals.length ? vals[i] : null);
+            Object v = i < vals.length ? vals[i] : null;
+            scope.declare(text(names.get(i)), v);
+            LuaGrammar.AttribContext at = al.attrib(i);
+            if (at.NAME() != null) registerAttrib(text(names.get(i)), text(at.NAME()), v, line(ctx));
         }
         return null;
+    }
+
+    private void registerAttrib(String var, String attrib, Object v, int line) {
+        if ("const".equals(attrib)) return;
+        if (!"close".equals(attrib)) {
+            throw new LuaError(pos(line) + "unknown attribute '" + attrib + "'");
+        }
+        if (v == null || Boolean.FALSE.equals(v)) return; // nil y false se ignoran
+        if (Lua.metaOf(v, "__close") == null) {
+            throw new LuaError(pos(line) + "variable '" + var + "' got a non-closable value");
+        }
+        if (scope.toClose == null) scope.toClose = new java.util.ArrayList<>();
+        scope.toClose.add(v);
     }
 
     @Override

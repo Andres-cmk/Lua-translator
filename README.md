@@ -8,7 +8,7 @@ analizador semántico de Lua, en la modalidad de **intérprete**.
 | Nombre | Usuario de GitHub |
 |---|---|
 | Andrés Felipe Ramírez | [@Andres-cmk](https://github.com/Andres-cmk) |
-| Luisa Bautista | |
+| Luisa Bautista | [@mbautistaa02](https://github.com/mbautistaa02) |
 | Misael Jesús Flórez Anave | [@misaeljesus](https://github.com/misaeljesus) |
 
 ## Qué hace
@@ -44,6 +44,8 @@ de error y el proceso termina normalmente (código 0), para no producir `RUNTIME
   métodos con `:`, recursión profunda y llamadas de cola.
 - **Metatablas:** `__index`, `__newindex`, `__call`, `__tostring`, `__name`, `__len`,
   `__eq`, `__lt`, `__le`, `__concat`, `__unm`, aritméticos y bitwise, `__metatable`, `__pairs`.
+- **Variables `<close>`:** se llama `__close` al salir del bloque, también cuando hay un error.
+- **Tablas débiles:** `__mode` y `collectgarbage("collect")` eliminan las entradas inalcanzables.
 - **Errores:** `error`, `pcall`, `xpcall`, `assert`, con los mismos mensajes que Lua
   (por ejemplo `stdin:3: attempt to index a nil value (local 't')`).
 - **Librería estándar:** `print`, `type`, `tostring`, `tonumber`, `pairs`, `ipairs`, `next`,
@@ -68,9 +70,11 @@ src/main/java/
   LuaPattern.java         patrones de Lua (port de lstrlib.c)
   StdLib.java             librería estándar
   Coroutine.java          corrutinas (un hilo por corrutina, uno solo corre a la vez)
+  LuaUserdata.java        valores userdata (archivos de io)
+  GarbageCollector.java   limpieza de tablas débiles en collectgarbage()
 lib/                      runtime de ANTLR 4.9.3 (va en el zip de UNcode)
 tools/                    ANTLR 4.9.3 completo (para generar el parser)
-tests/casos/              programas Lua de prueba
+tests/casos/              programas Lua de prueba (uncode_01..06 son los casos oficiales de UNcode)
 tests/esperado/           salida de Lua 5.4 oficial para cada caso
 scripts/build.sh          genera el parser, compila y arma entrega/uncode.zip
 scripts/test.sh           corre todos los casos y los compara con la salida esperada

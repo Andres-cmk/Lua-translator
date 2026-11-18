@@ -32,6 +32,7 @@ public final class Lua {
         if (v instanceof LuaTable) return "table";
         if (v instanceof LuaFunction) return "function";
         if (v instanceof Coroutine) return "thread";
+        if (v instanceof LuaUserdata) return "userdata";
         return "userdata";
     }
 
@@ -46,6 +47,7 @@ public final class Lua {
     public static LuaTable getMetatable(Object v) {
         if (v instanceof LuaTable) return ((LuaTable) v).metatable;
         if (v instanceof String) return stringMeta;
+        if (v instanceof LuaUserdata) return ((LuaUserdata) v).metatable;
         return null;
     }
 
@@ -468,6 +470,7 @@ public final class Lua {
     // ---------------------------------------------------------------- comparacion
 
     public static boolean rawEquals(Object a, Object b) {
+        if (a instanceof Double && b instanceof Double) return ((Double) a).doubleValue() == (Double) b; // NaN ~= NaN
         if (a == b) return true;
         if (a == null || b == null) return false;
         if (a instanceof Long) {
