@@ -1,0 +1,12 @@
+Rex dice guau	Rex trae la pelota	true
+(4, 6)	(-2, -2)	(2, 4)	(3, 6)	true	true	true	5.0	(-1, -2)
+(1, 2)(3, 4)	10
+default_foo	default_bar
+10	20	2
+false	stdin:34: tabla de solo lectura
+3	2	1
+true	xxx
+100	0
+42	nil
+false	true
+protegido	false	cannot change a protected metatable
